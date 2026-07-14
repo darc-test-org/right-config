@@ -1,0 +1,13 @@
+[project]
+name = "right-config"
+version = "1.0.0"
+description = "Demo service dependencies — every package resolves to PyPI."
+requires-python = ">=3.12"
+dependencies = [
+    "certifi==2025.1.31",
+    "idna==3.10",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
