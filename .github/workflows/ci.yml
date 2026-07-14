@@ -1,0 +1,50 @@
+name: CI
+
+# DARC SY-1.05 — pinned external resources, toolchains, and CI actions.
+# Every `uses:` below resolves to an immutable reference:
+#   * third-party actions  -> full-length commit SHA of a reviewed release,
+#                             annotated with the human-readable version
+#   * first-party actions/* -> exact SemVer release tag (never a floating major)
+#   * container actions    -> image digest (@sha256:...)
+#   * local actions        -> `./` path, resolved from the checked-out commit
+# Dependabot (.github/dependabot.yml) bumps these pins through reviewed PRs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      # Third-party action, pinned to the commit SHA of the reviewed release.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.12'
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+
+  pins:
+    name: action pinning
+    runs-on: ubuntu-latest
+    steps:
+      # First-party `actions/*` may use an exact SemVer release tag (`v4.2.2`),
+      # never a floating major (`v4`), which is repointable.
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+
+      # Local composite action: resolved from the commit already checked out,
+      # so there is nothing to pin. It re-checks the rules this file follows.
+      - uses: ./.github/actions/check-pins
+
+      # Container action pinned by image digest, not by a mutable tag.
+      - uses: docker://alpine@sha256:48b0309ca019d89d40f670aa1bc06e426dc0931948452e8491e3d65087abc07d
+        with:
+          args: /bin/true

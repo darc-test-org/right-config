@@ -1,0 +1,12 @@
+name: Check action pinning
+description: >-
+  Fails if any `uses:` in .github/workflows is not pinned to an immutable
+  reference, per DARC SY-1.05.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        python3 -m pip install --quiet --disable-pip-version-check pyyaml
+        python3 "$GITHUB_ACTION_PATH/check_pins.py" .github/workflows
