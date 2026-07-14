@@ -7,6 +7,9 @@ name: CI
 #   * first-party actions/* -> exact SemVer release tag (never a floating major)
 #   * container actions    -> image digest (@sha256:...)
 #   * local actions        -> `./` path, resolved from the checked-out commit
+# The runtime is likewise pinned to an exact patch version in an in-repo
+# toolchain file (.nvmrc, .python-version) that the setup steps consume, rather
+# than a floating selector (`lts/*`, or a bare major like `22`).
 # Dependabot (.github/dependabot.yml) bumps these pins through reviewed PRs.
 
 on:
@@ -24,9 +27,11 @@ jobs:
     steps:
       # Third-party action, pinned to the commit SHA of the reviewed release.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      # The runtime is pinned to an exact patch version in an in-repo toolchain
+      # file, which the setup step consumes — never a floating selector.
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
-          python-version: '3.12'
+          python-version-file: .python-version
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
 
   pins:
@@ -38,7 +43,7 @@ jobs:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
 
       # Local composite action: resolved from the commit already checked out,
       # so there is nothing to pin. It re-checks the rules this file follows.
